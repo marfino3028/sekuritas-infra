@@ -1,0 +1,14 @@
+# Sub-project sudah masing-masing punya repo Git sendiri (lihat .git di dalamnya),
+# jadi tidak perlu (dan sebaiknya tidak) ikut ditrack dari root ini.
+sekuritas-api/
+sekuritas-frontend/
+sekuritas-cms/
+sekuritas-ai/
+sekuritas-mobile/
+
+# Secrets / env asli — jangan pernah commit, cukup .env.example
+.env
+env/
+envsource/
+
+.DS_Store

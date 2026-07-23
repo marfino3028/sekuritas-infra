@@ -1,0 +1,108 @@
+# Victoria Sekuritas — orkestrasi dev/production seluruh service.
+# Jalankan dari folder ini: `docker compose up -d --build`
+# Sesuaikan .env tiap service, dan buat file `.env` di folder ini (lihat .env.example)
+# untuk mengisi PUBLIC_API_URL / PUBLIC_CMS_API_URL / PUBLIC_FRONTEND_URL sebelum build.
+
+services:
+  # ---------------- Database ----------------
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: victoria
+      POSTGRES_USER: victoria
+      POSTGRES_PASSWORD: secret
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      # Hanya bisa diakses dari VPS itu sendiri (SSH tunnel/psql lokal), tidak dari internet.
+      - "127.0.0.1:5455:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U victoria"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ---------------- Cache / Queue ----------------
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "127.0.0.1:6379:6379"
+
+  # ---------------- Object storage (KTP/selfie terenkripsi) ----------------
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: victoria
+      MINIO_ROOT_PASSWORD: secret12345
+    volumes:
+      - miniodata:/data
+    ports:
+      - "127.0.0.1:9000:9000"
+      - "127.0.0.1:9001:9001"
+
+  # ---------------- Backend API (Laravel) ----------------
+  api:
+    build: ./sekuritas-api
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    environment:
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: victoria
+      DB_USERNAME: victoria
+      DB_PASSWORD: secret
+      REDIS_HOST: redis
+      EKYC_PROVIDER: fastapi
+      EKYC_FASTAPI_URL: http://ekyc-ai:8000
+      EKYC_FASTAPI_KEY: change-me
+      EKYC_STORAGE_DISK: s3
+    ports:
+      # Nginx di dalam image ini listen di port 80 (bukan 8000) — lihat Dockerfile.
+      - "8080:80"
+
+  # ---------------- AI Service (FastAPI eKYC) ----------------
+  ekyc-ai:
+    build: ./sekuritas-ai
+    environment:
+      EKYC_AI_API_KEY: change-me
+      USE_GPU: "false"
+    ports:
+      # Hanya dipanggil oleh service `api` lewat docker network (http://ekyc-ai:8000),
+      # tidak perlu dan tidak boleh diekspos ke publik.
+      - "127.0.0.1:8000:8000"
+
+  # ---------------- Web depan (Nuxt, di-build jadi SPA statis) ----------------
+  frontend:
+    build:
+      context: ./sekuritas-frontend
+      args:
+        # SPA statis: URL ini di-bake saat build, dipanggil langsung dari browser user,
+        # jadi HARUS berupa alamat publik VPS (bukan nama service docker seperti "api").
+        NUXT_PUBLIC_API_BASE: ${PUBLIC_API_URL:-http://localhost:8080/api}
+    depends_on:
+      - api
+    ports:
+      # Image ini pakai nginx yang listen di port 80 (bukan 3000) — lihat Dockerfile.
+      - "3000:80"
+
+  # ---------------- CMS Admin (Nuxt, di-build jadi SPA statis) ----------------
+  cms:
+    build:
+      context: ./sekuritas-cms
+      args:
+        NUXT_PUBLIC_API_BASE: ${PUBLIC_CMS_API_URL:-http://localhost:8080/api/cms}
+        NUXT_PUBLIC_FRONTEND_BASE: ${PUBLIC_FRONTEND_URL:-http://localhost:3000}
+    depends_on:
+      - api
+    ports:
+      # Image ini pakai `serve` yang listen di port 3000 (bukan 80) — lihat Dockerfile.
+      - "3001:3000"
+
+volumes:
+  pgdata:
+  miniodata:
