@@ -1,0 +1,531 @@
+Delivered-To: marfinohamzah456@gmail.com
+Received: by 2002:a05:7208:50c7:b0:106:fea7:9aa7 with SMTP id j7csp2071362rbb;
+        Tue, 21 Jul 2026 08:54:43 -0700 (PDT)
+X-Received: by 2002:aa7:88c1:0:b0:848:467d:293b with SMTP id d2e1a72fcca58-84c29272e84mr19853881b3a.11.1784649282888;
+        Tue, 21 Jul 2026 08:54:42 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1784649282; cv=none;
+        d=google.com; s=arc-20260327;
+        b=AUVtYCm5XGo5gCS+3IugnuM0AYxamGxBi+XrpQT8hPGmFyFAUiSra97e5FwnVNqnuY
+         nChiWfdfb58oo7My5gHYdFQfMpAAPj/cjLIvLioMZzZGoOG4LEtUZDANX0hVEXKkgkwL
+         UXdSMbW77Ef1SyGTWHNzTPmm+MKnBjHDSkrfZvfKDIcq+2gtyygpH0MeBa4Diyauiu7/
+         +2gGPIEVMri7GcL20NiXDuGCGGDqhNFo5jGSrRPC8T30e9EMs9xAKKSHs3n62Q5w+Jib
+         n2JQSdT3tyeROIbH0jf/vOdDSioE7HiZlzkryTaqjl1FRiAE68iUUxkKrs177JNrFhPh
+         Mq8Q==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=mime-version:to:from:subject:date:message-id:dkim-signature;
+        bh=WZA1iJztpkyl0zuO9c5drh7RLWX66S3XsjQw6B69dMo=;
+        fh=QQmziKYWiKr5LBKP7shWdSv/ovvB9Vm5o555JSb559w=;
+        b=qx4VzvOBEu3kOK+iz3J+DjnD+43v7dGxsBBvRYVwi/OaIZ1Dyr9LsRnl6cDMIHZ8ZV
+         aQWviAsC5HI+SaR4ls/JO9/ZJ9BEEyTlNcoHscOMN82HU8FpSUKTmj7bqbtyZ0qFSE/d
+         rFp+xSIrGIJl00WQFl16PdD9+P17bvj9pNvdG+oNMoaWbdJmTt0a7b158eBgjXy6JTm4
+         XBhGjXBUzXR2bEisAkbr+LKZNowXoai49lJ0bNFGN/N0Hs4K4xOuY8zfjxVXmQXXt8Gh
+         2GZV1y/e7zhSOsZfsaUOvvUElJ+3ljdzW6nP+KjLnt/rxsNCufmVBXKzUGmwJo4UtWI1
+         1zMw==;
+        dara=google.com
+ARC-Authentication-Results: i=1; mx.google.com;
+       dkim=pass header.i=@cgsi.com header.s=cgsiidsmg header.b="PN/zbCAl";
+       spf=pass (google.com: domain of id.noreply@cgsi.com designates 202.165.39.117 as permitted sender) smtp.mailfrom=id.noreply@cgsi.com;
+       dmarc=pass (p=QUARANTINE sp=QUARANTINE dis=NONE) header.from=cgsi.com
+Return-Path: <id.noreply@cgsi.com>
+Received: from smtpjk1.cgsi.co.id (smtpjk1.cgsi.co.id. [202.165.39.117])
+        by mx.google.com with ESMTPS id d2e1a72fcca58-84c2ad8859csi24450432b3a.14.2026.07.21.08.54.42
+        for <marfinohamzah456@gmail.com>
+        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
+        Tue, 21 Jul 2026 08:54:42 -0700 (PDT)
+Received-SPF: pass (google.com: domain of id.noreply@cgsi.com designates 202.165.39.117 as permitted sender) client-ip=202.165.39.117;
+Authentication-Results: mx.google.com;
+       dkim=pass header.i=@cgsi.com header.s=cgsiidsmg header.b="PN/zbCAl";
+       spf=pass (google.com: domain of id.noreply@cgsi.com designates 202.165.39.117 as permitted sender) smtp.mailfrom=id.noreply@cgsi.com;
+       dmarc=pass (p=QUARANTINE sp=QUARANTINE dis=NONE) header.from=cgsi.com
+DKIM-Signature: v=1; a=rsa-sha256; d=cgsi.com; s=cgsiidsmg; c=relaxed/simple;
+	q=dns/txt; i=@cgsi.com; t=1784649281; x=1787241281;
+	h=From:Sender:Reply-To:Subject:Date:Message-ID:To:Cc:MIME-Version:Content-Type:
+	Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:Resent-From:
+	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:List-Id:
+	List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+	bh=RapLSeRg8hVO0zBRwhqiwrnWaR9wQ5htTU2qJBEYlaA=;
+	b=PN/zbCAlFIFu7F1N9TTH+O3eAzDjinlzANvH40M8Aq3wW0eVpyFhiYcHA5HOjrG1
+	QjlOgxnwFt49uxmxUWBJC/E8Krh/hoH5h7TkB9zZYD3QMat4gyLxWvuMxqxIalRT
+	cL5IggNkPFGpqpC29Xpu/kztpsUYjJHHOdG38nl1vYQ=;
+X-AuditID: ac130012-c58fa70000001940-e6-6a5f9640a6f9
+Received: from [127.0.0.1] (Unknown_Domain [172.19.0.49])
+	by smtpjk1.cgsi.co.id (Symantec Messaging Gateway) with SMTP id 04.FE.06464.0469F5A6; Tue, 21 Jul 2026 22:54:41 +0700 (+07)
+Message-ID: <0a5a49b95980f3729380320fc85151d4@swift.generated>
+Date: Tue, 21 Jul 2026 22:54:40 +0700
+Subject: Complete Account
+From: CGS International <id.noreply@cgsi.com>
+To: marfinohamzah456@gmail.com
+MIME-Version: 1.0
+Content-Type: multipart/related;
+ boundary="_=_swift_v4_1784649280_63bc8a069fa9b1e174792c302f94b0a9_=_"
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFprAIsWRmVeSWpSXmKPExsWyRpjBUNdxWnyWwfHVjBZ7l/s6MHrsnHWX
+	PYAxqoHRJjEvL78ksSRVISW1ONlWKaAosywxuVJJIS2/KDk1JC81zVYpLTGnOFVJITPFVslQ
+	SaEgJzE5NTc1r8RWKbGgIDUvRcmOSwED2ACVZeYppOYl56dk5qXbKoWGuOlaKNlpoYGE9+IZ
+	V1dPYi9YMI2xYs20CewNjJ+ruxg5OSQETCQ2HNvJ3MXIxSEksJ1R4taCnYwgCV4BO4mZN+ez
+	gtgsAqoS154tZQKxhQUkJZ69nAxWwyagK7Gh/wlLFyMHh4iAnMSuzT4QrYISJ2eChDk5mAUy
+	JI58vMc0gZFzFpLULCSpWUDdzAJqEstalSDC2hLLFr5mhrBjJWY9/QxVrigxpfshO4RtJ7Fj
+	yjWoeKrEmrk9LAsYOVYx8nu6uAcHhDr7+wb7uhsYGG5ihMSM0A7GrntuhxiZOBgPMaoA9Tza
+	sPoCoxRLXn5eqpIIb8nPuCwh3pTEyqrUovz4otKc1OJDjNpAf09kluJOzgfGcl5JvLGBgZI4
+	r1SbUIqQQDowKrNTUwtSi2CqmTg4pRoY7auTrx815RPMcD9sul1x29Q9b9aqin7eM73ku+jF
+	di2B2Y5rVe3v3atQ3yIXrzJ/8x8uIfXorL67r5ojfO0cNjTG3NKa3juDLcthyenVci/7t8lM
+	l+/ocT3200ZfZOmfVakfI9qFM7auqb84PXtTW+DXH11mdRVtXH0PL00MftD7Ivy3n5CMEktx
+	RqKhFnNRcSIAg6lzeqMCAAA=
+
+
+--_=_swift_v4_1784649280_63bc8a069fa9b1e174792c302f94b0a9_=_
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE html>
+<html lang=3D"en" xmlns:v=3D"urn:schemas-microsoft-com:vml" xmlns:o=3D"urn:s=
+chemas-microsoft-com:office:office">
+  <head>
+    <meta http-equiv=3D"Content-Type" content=3D"text/html; charset=3Dutf-8"=
+ />
+    <meta name=3D"viewport" content=3D"width=3Ddevice-width,initial-scale=3D=
+1" />
+    <meta http-equiv=3D"X-UA-Compatible" content=3D"IE=3Dedge" />
+    <title></title>
+
+    <style type=3D"text/css">
+
+      @import  url('https://fonts.googleapis.com/css?family=3DLato:400,700')=
+;
+      @media  only screen {
+        th, td, div, p {font-family: 'Lato', Helvetica, Arial, sans-serif !i=
+mportant;}
+      }
+
+      #outlook a {padding: 0;}
+      a {text-decoration: none;}
+      table {border-collapse: collapse;}
+      th, td, div, p {-webkit-font-smoothing: antialiased; -webkit-text-size=
+-adjust: 100%; -ms-text-size-adjust: 100%; font-family: Helvetica, Arial, sa=
+ns-serif; font-size: 13px; line-height: 23px;  word-break: break-all; word-b=
+reak: break-word;}
+      img {-ms-interpolation-mode: bicubic; border: 0; display: block; heigh=
+t: auto; line-height: 100%; outline: none; text-decoration: none;}
+
+      .row {
+        margin: 0 auto;
+        width: 700px;
+      }
+      .row .row {width: 100%;}
+
+      .spacer {overflow: hidden;}
+      th.menu-item {display: inline;}
+      .hover-shrink:hover {transform: scale(0.7);}
+
+      @media  only screen and (max-width: 699px) {
+
+        .wrapper {min-width: 100% !important;}
+        .row {width: 90% !important;}
+        .row .row {width: 100% !important;}
+
+        .column {
+          box-sizing: border-box;
+          display: inline-block !important;
+          width: 100% !important;
+          word-break: break-word;
+        }
+
+        .mobile-1  {max-width: 8.33333%;}
+        .mobile-2  {max-width: 16.66667%;}
+        .mobile-3  {max-width: 25%;}
+        .mobile-4  {max-width: 33.33333%;}
+        .mobile-5  {max-width: 41.66667%;}
+        .mobile-6  {max-width: 50%;}
+        .mobile-7  {max-width: 58.33333%;}
+        .mobile-8  {max-width: 66.66667%;}
+        .mobile-9  {max-width: 75%;}
+        .mobile-10 {max-width: 83.33333%;}
+        .mobile-11 {max-width: 91.66667%;}
+        .mobile-12 {
+          padding-right: 30px !important;
+          padding-left: 30px !important;
+        }
+
+        .mobile-offset-1  {margin-left: 8.33333% !important;}
+        .mobile-offset-2  {margin-left: 16.66667% !important;}
+        .mobile-offset-3  {margin-left: 25% !important;}
+        .mobile-offset-4  {margin-left: 33.33333% !important;}
+        .mobile-offset-5  {margin-left: 41.66667% !important;}
+        .mobile-offset-6  {margin-left: 50% !important;}
+        .mobile-offset-7  {margin-left: 58.33333% !important;}
+        .mobile-offset-8  {margin-left: 66.66667% !important;}
+        .mobile-offset-9  {margin-left: 75% !important;}
+        .mobile-offset-10 {margin-left: 83.33333% !important;}
+        .mobile-offset-11 {margin-left: 91.66667% !important;}
+
+        .has-columns {
+          padding-right: 20px !important;
+          padding-left: 20px !important;
+        }
+
+        .has-columns .column {
+          padding-right: 10px !important;
+          padding-left: 10px !important;
+        }
+
+        .mobile-collapsed .column {
+          padding-left: 0 !important;
+          padding-right: 0 !important;
+        }
+
+        img {
+          width: 100%;
+          height: auto;
+        }
+
+        .mobile-center {
+          display: table !important;
+          float: none;
+          margin-left: auto !important;
+          margin-right: auto !important;
+        }
+        .mobile-left {
+          float: none;
+          margin: 0 !important;
+        }
+        .mobile-text-center {text-align: center !important;}
+        .mobile-text-left   {text-align: left !important;}
+        .mobile-text-right  {text-align: right !important;}
+
+        .show-on-mobile {
+          display: table !important;
+          overflow: visible !important;
+          line-height: inherit !important;
+        }
+
+        .hide-on-mobile {
+          display: none !important;
+          width: 0;
+          overflow: hidden;
+        }
+
+        .mobile-full-width {
+          display: table;
+          width: 100% !important;
+        }
+
+        .mobile-first {display: table-header-group !important;}
+        .mobile-intermediate {display: table-row !important;}
+        .mobile-last {display: table-footer-group !important;}
+
+        .mobile-first th,
+        .mobile-intermediate th,
+        .mobile-last th {
+          padding-left: 30px !important;
+          padding-right: 30px !important;
+        }
+
+        .menu[align=3D"center"],
+        .menu.mobile-center {
+          width: auto !important;
+        }
+        .menu-item,
+        th.menu-item {
+          width: auto !important;
+          display: inline-block !important;
+          padding: 0 10px 0 !important;
+        }
+        .menu.mobile-vertical .menu-item {
+          display: block !important;
+          padding: 0 0 15px 0 !important;
+        }
+
+        .hamburger-menu,
+        .accordion-content {
+          max-height: 0;
+          overflow: hidden;
+          -ms-transition: max-height .25s linear;
+          -webkit-transition: max-height .25s linear;
+          transition: max-height .25s linear;
+        }
+        .menu-trigger img {
+          display: block;
+          margin: 0 auto !important;
+          float: none !important;
+          max-height: none !important;
+        }
+        .menu-trigger:hover + .hamburger-menu,
+        .hamburger-menu:hover {max-height: 300px;}
+        .accordion-item:hover .accordion-content {max-height: 999px;}
+
+        u ~ div .wrapper .menu-trigger img {display: none;}
+        u ~ div .wrapper .hamburger-menu {max-height: none; padding-top: 15p=
+x;}
+        u ~ div .wrapper .accordion-content {max-height: none;}
+        u ~ div .wrapper .menu .menu-item {
+          display: inline-block !important;
+          padding: 0 10px !important;
+        }
+
+        .h1 {font-size: 42px !important;}
+        .h2 {font-size: 28px !important;}
+        .h3 {font-size: 16px !important;}
+
+        .spacer                     {height: 30px; line-height: 100% !import=
+ant; font-size: 100% !important;}
+        .divider th                 {height: 60px;}
+        .mobile-padding-top         {padding-top: 30px !important;}
+        .mobile-padding-top-mini    {padding-top: 10px !important;}
+        .mobile-padding-bottom      {padding-bottom: 30px !important;}
+        .mobile-padding-bottom-mini {padding-bottom: 10px !important;}
+        .mobile-margin-top          {margin-top: 30px !important;}
+        .mobile-margin-top-mini     {margin-top: 10px !important;}
+        .mobile-margin-bottom       {margin-bottom: 30px !important;}
+        .mobile-margin-bottom-mini  {margin-bottom: 10px !important;}
+        .no-border-on-mobile        {border: none !important;}
+
+        .overlay-bg {background: #d2cece;}
+      }
+    </style>
+  </head>
+  <body style=3D"box-sizing: border-box; margin: 0; padding: 0; width: 100%;=
+">
+
+    <table class=3D"wrapper" align=3D"center" bgcolor=3D"#EEEEEE" cellpaddin=
+g=3D"0" width=3D"100%" style=3D"min-width: 700px;">
+      <tr>
+        <td style=3D"padding: 30px 0;">
+			  <table class=3D"row" align=3D"center" bgcolor=3D"#FFFFFF" cellpadding=
+=3D"0">
+			  <tr>
+			    <td class=3D"spacer" height=3D"20" style=3D"font-size: 20px; line-hei=
+ght: 20px; mso-line-height-rule: exactly;">&nbsp;</td>
+			  </tr>
+			  <tr valign=3D"top" style=3D"vertical-align: top; ">
+			    <th class=3D"column" width=3D"640" style=3D"padding-left: 30px; paddi=
+ng-right: 30px;">
+			      <center>
+			        <a href=3D"https://register.cgsi.co.id" target=3D"_blank">
+			          <img src=3D"cid:8ced77d22a2f11d60dac7080f25b496e@swift.generate=
+d" style=3D"border: 0; max-width: 250px;">
+			        </a>
+			      </center>
+			    </th>
+			  </tr>
+			  <tr>
+			    <td class=3D"spacer" height=3D"20" style=3D"font-size: 20px; line-hei=
+ght: 20px; mso-line-height-rule: exactly;">&nbsp;</td>
+			  </tr>
+			</table>
+
+            <table class=3D"row" align=3D"center" bgcolor=3D"#F4F4F4" cellpa=
+dding=3D"0">
+              <tr>
+                <td class=3D"spacer" height=3D"80" style=3D"font-size: 80px;=
+ line-height: 80px; mso-line-height-rule: exactly;">&nbsp;</td>
+              </tr>
+              <tr valign=3D"top" style=3D"vertical-align: top;">
+                <th class=3D"column mobile-12" width=3D"520" style=3D"paddin=
+g: 0 90px; color: #232323; font-weight: 400;">
+                  <div style=3D"color: #666666; font-size: 18px; margin-bott=
+om: 45px;">
+                  		<p>Kepada Nasabah Yang Terhormat,<br />
+<span style=3D"color:#d3d3d3;"><em>Dear Valued Customer,</em></span></p>
+
+<p>Terima kasih, Anda telah menyelesaikan proses pengisian pembukaan rekenin=
+g <em>online.</em><br />
+<span style=3D"color:#d3d3d3;"><em>Thank you, you have completed filling onl=
+ine account opening process.</em></span></p>
+
+<div style=3D'display:none;'>
+<p>Untuk melanjutkan proses pembukaan rekening Anda, kami lampirkan pembukaa=
+n rekening yang harus ditandatangani, diantaranya adalah:<br />
+<span style=3D"color:#d3d3d3;"><em>To continue the process of your account o=
+pening, we attach application forms that must be signed:</em></span></p>
+
+<p>Pembukaan Rekening Efek CGSI/<em> <span style=3D"color:#d3d3d3;">Applicat=
+ion Account Opening CGSI</span>&nbsp;:</em>&nbsp;%link_cgs%<br />
+Rekening Dana Nasabah CIMB Niaga/<em> <span style=3D"color:#d3d3d3;">Investo=
+r Account CIMB Niaga</span> :</em>%link_pdf%<br />
+%link_w8%<br />
+%link_w9%<br />
+%link_crs%</p>
+
+<p>Mohon agar menandatangani formulir tersebut dan pastikan tanda tangan ses=
+uai dengan identitas. Dan kirimkan pembukaan rekening tersebut diatas besert=
+a lampirkan dokumen-dokumen pendukung yang dibutuhkan.</p>
+
+<p><span style=3D"color:#d3d3d3;"><em>Please sign the application forms and=
+ ensure the signature same as your identity. And return the signed applicati=
+on form with supporting documents needed.</em></span></p>
+
+<p>Dokumen tersebut dikirimkan ke/ <em><span style=3D"color:#d3d3d3;">Docume=
+nts send to</span> :</em></p>
+
+<p><em>Up. Client Service &nbsp;</em></p>
+
+<p><span style=3D"font-family:Arial,Helvetica,sans-serif">PT CGS Internation=
+al&nbsp;Sekuritas Indonesia</span><br />
+(Member of Indonesia Stock Exchange)<br />
+The Indonesia Stock Exchange Building, Tower II 20th Floor<br />
+Jl. Jend Sudirman Kav. 52-53, Jakarta 12190, Indonesia</p>
+</div>
+
+<p>Apabila ada pertanyaan untuk hal tersebut diatas, dapat menghubungi Clien=
+t Services Department melalui Nomor Telepon 021 - 2996 1800 atau email ke jk=
+.cso@cgsi.com.&nbsp;</p>
+
+<p><span style=3D"color:#d3d3d3;"><em>If you have questions for the above, p=
+lease contact the Client Services Department at 021 - 2996 1800 or email to=
+ jk.cso@cgsi.com.</em></span></p>
+
+<p><em>Terima kasih.</em></p>
+
+<p><span style=3D"color:#d3d3d3;"><em>Thank you</em></span></p>
+
+<p>Hormat kami/<em>Regards</em>,</p>
+
+<p>&nbsp;</p>
+
+<p><span style=3D"font-family:Arial,Helvetica,sans-serif">PT CGS Internation=
+al&nbsp;Sekuritas Indonesia</span></p>
+
+	 			         </div>
+                  
+                  <div style=3D"font-size: 14px; margin-top: 45px;"></div>
+                </th>
+              </tr>
+              <tr>
+                <td class=3D"spacer" height=3D"80" style=3D"font-size: 80px;=
+ line-height: 80px; mso-line-height-rule: exactly;">&nbsp;</td>
+              </tr>
+            </table>
+        </td>
+      </tr>
+    </table>
+
+  <!-- --><html>
+<body>
+<p>
+****************************************************************************=
+********************************************
+<br>
+Email Disclaimer:
+<br>
+Privileged/confidential information may be contained in this message. If thi=
+s message is received by anyone other than the intended addressee, please re=
+turn the message to the sender by replying to it and then delete the message=
+ from your computer. Unintended recipients are prohibited from taking action=
+ on the basis of information in this e-mail. No confidentiality or privilege=
+ is waived or lost by CGS International Securities Pte. Ltd., its related co=
+rporations and affiliates (collectively "CGSI Group") by any mistransmission=
+ of this e-mail. CGSI Group does not accept responsibility
+or liability for the accuracy or completeness of, or presence of any virus o=
+r disabling code in, this e-mail. CGSI Group reserves the right to monitor e=
+-mail communications through its networks (in accordance with applicable law=
+s). Opinions, conclusions, statements and other information in this message=
+ that do not relate to the official business of CGSI Group shall be understo=
+od as neither given nor endorsed by it.
+<br>
+<br>
+Visit our website at www.cgsi.com
+<br>
+****************************************************************************=
+********************************************
+</p>
+</body>
+</html>
+</body>
+</html>
+
+--_=_swift_v4_1784649280_63bc8a069fa9b1e174792c302f94b0a9_=_
+Content-Type: image/png;
+ name=cover_w216_h47_cgsi-sekuritas-indonesia-center_logo-email.png
+Content-Transfer-Encoding: base64
+Content-ID: <8ced77d22a2f11d60dac7080f25b496e@swift.generated>
+Content-Disposition: inline;
+ filename=cover_w216_h47_cgsi-sekuritas-indonesia-center_logo-email.png
+
+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
+
+--_=_swift_v4_1784649280_63bc8a069fa9b1e174792c302f94b0a9_=_--
+
