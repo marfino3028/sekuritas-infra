@@ -1,0 +1,15 @@
+brew install git-lfs
+
+git lfs install;
+
+git lfs track "*.gif"
+
+git lfs track "*.mp4"
+
+git lfs track "*.png"
+
+git lfs track "*.jpg";
+
+git add .gitattributes
+
+git commit -m "Track large design assets with Git LFS";git lfs migrate import --include="*.gif,*.mp4,*.png,*.jpg" --everything;git push origin main --force
