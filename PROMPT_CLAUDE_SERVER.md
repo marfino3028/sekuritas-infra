@@ -50,8 +50,11 @@ langkah 3–9 PERSIS. Ringkasnya:
    a. curl https://api.<DOMAIN>/api/health → status ok
    b. curl -s https://api.<DOMAIN>/api/products | cek ada 10 produk (victoria) atau 5 produk (danapathi)
    c. curl -I https://app.<DOMAIN> dan https://cms.<DOMAIN> → 200
-   d. Login CMS via API: POST https://api.<DOMAIN>/api/cms/auth/login
-      email=admin@sekuritas-demo.id password=Admin@123456 → dapat token
+   d. Login semua akun demo (password: Admin@123456 / Ops@123456 / Member@123):
+      - CMS  POST /api/cms/auth/login : superadmin@danapathi-demo.id & ops@danapathi-demo.id
+        (versi victoria: admin@sekuritas-demo.id & ops@sekuritas-demo.id)
+      - Web  POST /api/auth/login-email : member@... (status active) & member.baru@... (belum KYC)
+      Catatan: endpoint auth dibatasi 10 request/menit — beri jeda bila kena 429.
    e. Alur nasabah via API: POST /api/auth/register-email (email acak, password Rahasia123) →
       ambil token aktivasi dari DB (docker compose exec postgres psql -U victoria -d victoria -c
       "select activation_token from users where email='...'") → POST /api/auth/activate →

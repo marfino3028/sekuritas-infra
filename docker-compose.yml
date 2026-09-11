@@ -73,7 +73,8 @@ services:
       MAIL_FROM_NAME: ${MAIL_FROM_NAME:-Victoria Sekuritas}
       # eKYC: fastapi = pakai service ekyc-ai di bawah; stub = tanpa AI (OCR tidak auto-isi)
       EKYC_PROVIDER: ${EKYC_PROVIDER:-fastapi}
-      EKYC_FASTAPI_URL: http://ekyc-ai:8000
+      # Ganti ke URL luar bila AI dijalankan di mesin lain (mis. laptop via ngrok) — lihat DEPLOY_VPS §6c
+      EKYC_FASTAPI_URL: ${EKYC_FASTAPI_URL:-http://ekyc-ai:8000}
       EKYC_FASTAPI_KEY: ${EKYC_AI_API_KEY}
       # Inference di CPU (Nanonets OCR) bisa 30–120 dtk per foto.
       EKYC_FASTAPI_TIMEOUT: ${EKYC_FASTAPI_TIMEOUT:-180}
@@ -108,6 +109,11 @@ services:
       ALLOW_MODEL_DOWNLOADS: "true"
       NANONETS_PRELOAD_ON_START: ${NANONETS_PRELOAD_ON_START:-true}
       NANONETS_N_THREADS: ${NANONETS_N_THREADS:-4}
+      # Mode A hemat RAM (DEPLOY_VPS §6b): model kuantisasi lebih kecil + konteks lebih pendek
+      NANONETS_MODEL_FILE: ${NANONETS_MODEL_FILE:-Nanonets-OCR-s-Q4_0.gguf}
+      NANONETS_MODEL_PATH: ./model/${NANONETS_MODEL_FILE:-Nanonets-OCR-s-Q4_0.gguf}
+      NANONETS_CTX_SIZE: ${NANONETS_CTX_SIZE:-8192}
+      INSIGHTFACE_MODEL_NAME: ${INSIGHTFACE_MODEL_NAME:-buffalo_l}
       INSIGHTFACE_MODEL_ROOT: /app/model/insightface
     volumes:
       # Isi dulu dengan: bash ../sekuritas-ai/scripts/download_models.sh (±3 GB)

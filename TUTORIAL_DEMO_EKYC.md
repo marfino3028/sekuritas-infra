@@ -45,12 +45,19 @@ Reset data demo kapan saja: `cd sekuritas-api && php artisan migrate:fresh --see
 | CMS admin | http://localhost:3001 | https://cms.DOMAIN |
 | AI eKYC | http://localhost:8001 (opsional) | internal (tidak publik) |
 
-**Akun demo (hasil seed):**
-| Peran | Email | Password |
-|---|---|---|
-| Super Admin | `admin@sekuritas-demo.id` | `Admin@123456` |
-| Ops | `ops@sekuritas-demo.id` | `Ops@123456` |
-| Nasabah (10 org) | mis. `budi.santoso@mail.test` | `Nasabah@123` |
+**Akun demo (hasil seed — otomatis dibuat saat `migrate:fresh --seed` / container api pertama jalan):**
+
+| Peran | Login di | Versi Danapathi (branch `danapathi`) | Versi Victoria (`main`) | Password |
+|---|---|---|---|---|
+| **Super Admin** (semua menu) | CMS | `superadmin@danapathi-demo.id` | `admin@sekuritas-demo.id` | `Admin@123456` |
+| **Ops** (KYC + SID) | CMS | `ops@danapathi-demo.id` | `ops@sekuritas-demo.id` | `Ops@123456` |
+| **Member aktif** (KYC ✔, SID ✔, punya portofolio — demo beli/portofolio) | Web | `member@danapathi-demo.id` | `member@sekuritas-demo.id` | `Member@123` |
+| **Member baru** (sudah aktivasi, BELUM KYC — demo eKYC dari awal) | Web | `member.baru@danapathi-demo.id` | `member.baru@sekuritas-demo.id` | `Member@123` |
+| 10 nasabah acak (status KYC campur) | Web | mis. `budi.santoso@mail.test` | sama | `Nasabah@123` |
+
+> Setelah "Member baru" dipakai demo eKYC, datanya sudah terisi. Untuk mengulang demo: reset data
+> (`php artisan migrate:fresh --seed`, di server: `docker compose exec api php artisan migrate:fresh --seed --force`)
+> atau daftar akun baru lewat halaman Daftar.
 
 **Bahan:** 1 foto KTP (contoh: `sekuritas-infra/design/ktp.jpeg`) & 1 foto selfie sambil memegang KTP.
 **Email aktivasi:** kalau `MAIL_MAILER=log`, ambil link aktivasi dari log:
@@ -107,7 +114,7 @@ Satu alur **5 langkah** (stepper di atas: Verifikasi → Data Pribadi → Data P
 Ops = verifikasi KYC & terbitkan SID (tidak bisa kelola produk/user — itu super admin).
 
 ### B1. Login — 15 dtk
-1. Buka **http://localhost:3001** → login **`ops@sekuritas-demo.id` / `Ops@123456`**.
+1. Buka **http://localhost:3001** → login **Ops** (lihat tabel akun: `ops@danapathi-demo.id` / `Ops@123456`).
 
 ### B2. ⭐ Review KYC + hasil eKYC — 1 menit
 1. Menu **KYC Management** → daftar pengajuan (status *pending*).
@@ -134,7 +141,7 @@ Ops = verifikasi KYC & terbitkan SID (tidak bisa kelola produk/user — itu supe
 Super admin = semua akses.
 
 ### C1. Login — 15 dtk
-1. Logout ops → login **`admin@sekuritas-demo.id` / `Admin@123456`**.
+1. Logout ops → login **Super Admin** (`superadmin@danapathi-demo.id` / `Admin@123456`).
 
 ### C2. Dashboard & kelola data — 1.5 menit
 1. **Dashboard** → ringkasan nasabah/transaksi/AUM/event.

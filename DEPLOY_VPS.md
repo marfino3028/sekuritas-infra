@@ -113,6 +113,46 @@ docker compose up -d
 ```
 Cek sisa RAM dulu: `free -h` (lihat kolom *available*) dan `nproc`. Mode A butuh *available* ≥ 5 GB.
 
+### Mode A hemat RAM (server dengan *available* ±4 GB)
+Model OCR varian lebih kecil + konteks lebih pendek + model wajah kecil → turun ±0,8 GB (±3,3 GB total AI):
+```bash
+# .env
+NANONETS_MODEL_FILE=Nanonets-OCR-s-Q3_K_M.gguf     # 1,6 GB (Q4_0 = 1,8 GB); mmproj tetap 1,3 GB
+NANONETS_CTX_SIZE=4096                              # KV-cache ±150 MB (8192 = ±300 MB)
+INSIGHTFACE_MODEL_NAME=buffalo_s                    # ±160 MB (buffalo_l = ±330 MB)
+NANONETS_N_THREADS=<jumlah vCPU>
+# unduh varian yang sama:
+NANONETS_MODEL_FILE=Nanonets-OCR-s-Q3_K_M.gguf bash ../sekuritas-ai/scripts/download_models.sh
+```
+Konsekuensi: akurasi baca KTP sedikit turun (cek hasil dengan `design/ktp.jpeg`), dan di CPU 2–4 vCPU
+satu foto KTP butuh ±30–90 detik. Kalau RAM kurang, container `ekyc-ai` akan `Killed`/restart
+(`docker compose logs ekyc-ai`) → pakai §6c atau tambah RAM.
+
+## 6c. Mode A "hybrid": AI dijalankan di laptop saat demo
+Server tetap mode ringan; OCR/liveness/face-match dikerjakan laptop (Mac M1 memakai GPU Metal → cepat)
+yang dibuka ke internet lewat **ngrok**. Syarat: laptop menyala & online selama demo, RAM laptop bebas ±4 GB
+(matikan Docker/colima & aplikasi berat).
+```bash
+# --- di LAPTOP (sekali) ---
+cd sekuritas-ai
+bash scripts/download_models.sh                                   # ±3 GB
+.venv/bin/pip install -r requirements-models.txt                  # llama-cpp-python otomatis pakai Metal di Mac
+brew install tesseract tesseract-lang
+# .env sekuritas-ai: OCR_ENGINE=nanonets, FACE_MATCH_ENGINE=insightface, LIVENESS_ENGINE=facenox-onnx,
+#   SELFIE_KTP_ENGINE=nanonets_tesseract, ALLOW_MODEL_DOWNLOADS=true, EKYC_AI_API_KEY=<sama dgn server>
+
+# --- di LAPTOP (setiap demo) ---
+.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8001
+ngrok http 8001                     # catat URL https://xxxx.ngrok-free.app
+
+# --- di SERVER ---
+# .env infra: EKYC_PROVIDER=fastapi, EKYC_FASTAPI_URL=https://xxxx.ngrok-free.app, EKYC_WITH_MODELS=false
+docker compose up -d api            # api memakai URL baru; service ekyc-ai lokal boleh dimatikan:
+docker compose stop ekyc-ai
+```
+Keamanan: semua endpoint AI wajib header `X-Api-Key` (= `EKYC_AI_API_KEY`), jadi URL ngrok tidak bisa
+dipakai orang lain tanpa kunci. URL ngrok gratis berubah tiap dijalankan → update `.env` server & `docker compose up -d api`.
+
 ## 7. Build & jalankan
 ```bash
 cd /opt/victoria/sekuritas-infra
@@ -158,7 +198,7 @@ certbot --nginx -d app.DOMAIN_ASLI.com -d cms.DOMAIN_ASLI.com -d api.DOMAIN_ASLI
 ## 9. Uji akhir (checklist sebelum demo)
 - [ ] `https://api.DOMAIN/api/health` → ok
 - [ ] `https://app.DOMAIN` tampil, katalog reksa dana terisi (10 produk Victoria / 5 produk Danapathi)
-- [ ] `https://cms.DOMAIN` → login `admin@sekuritas-demo.id` / `Admin@123456`
+- [ ] `https://cms.DOMAIN` → login Super Admin (`superadmin@danapathi-demo.id` atau `admin@sekuritas-demo.id` / `Admin@123456`) — daftar lengkap akun di `TUTORIAL_DEMO_EKYC.md`
 - [ ] Daftar akun baru → email aktivasi masuk (atau ambil dari log:
       `docker compose exec api grep -o 'aktivasi?token=[A-Za-z0-9]*' storage/logs/laravel.log | tail -1`)
 - [ ] eKYC: foto KTP → data terbaca otomatis (mode A) → submit → masuk CMS → Approve → Kirim ke S-INVEST

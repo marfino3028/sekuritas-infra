@@ -59,8 +59,10 @@ php artisan serve --port=8000
 Cek: http://localhost:8000/api/health → `{"status":"ok"}`
 
 **Akun hasil seed:**
-- Admin CMS: `admin@sekuritas-demo.id` / `Admin@123456`
-- Ops CMS: `ops@sekuritas-demo.id` / `Ops@123456`
+- Admin CMS: `admin@sekuritas-demo.id` / `Admin@123456` (branch `danapathi`: `superadmin@danapathi-demo.id`)
+- Ops CMS: `ops@sekuritas-demo.id` / `Ops@123456` (branch `danapathi`: `ops@danapathi-demo.id`)
+- Member aktif / member baru (web): `member@…` / `member.baru@…` (domain sama dgn admin) — `Member@123`
+- Tabel lengkap: `TUTORIAL_DEMO_EKYC.md` bagian 0c
 - Nasabah (10 orang), password semua: `Nasabah@123` (mis. `budi.santoso@mail.test`)
 
 ### 2. Web depan — `sekuritas-frontend`
