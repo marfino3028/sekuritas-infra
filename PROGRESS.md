@@ -47,6 +47,17 @@ Repo lokal: `sekuritas-api` (Laravel), `sekuritas-cms` (Nuxt admin), `sekuritas-
 - **Dokumen formal**: `SAD_TDD.md` (arsitektur+kontrak+sequence), `UIUX_RESEARCH.md` (Victoria vs CGS).
 - Status per bagian ditandai di `PROMPTS.md` & `MASTER_PROMPT_EKYC...md`.
 
+## ✅ SELESAI (sesi 6 — 2026-09-11: clone ulang, verifikasi, deploy VPS baru, riset desain)
+- **Clone ulang & install lokal** (layout baru: 6 repo SEJAJAR di `freelance/sekuritas/`, termasuk `sekuritas-infra`). `install-all.sh` diperbaiki (path sibling, Python 3.11, auto `.env` SQLite + migrate/seed).
+- **N-1 terverifikasi**: `migrate:fresh --seed` OK (10 nasabah, 10 produk, 4 event, 12 artikel, 19 registrasi). `php artisan test` 5/5 lulus (fix `EkycFlowTest`: `fake()->create()` isinya kosong → pakai `createWithContent`).
+- **Uji end-to-end via API**: register-email → aktivasi → login → eKYC (session/OCR/liveness/face/ttd/verify, skor 90) → kyc/submit → ops approve → issue-sid → subscribe (VA mock). Semua OK.
+- **Temuan**: mode `stub` → OCR TIDAK mengisi NIK/nama (Tesseract on-device sudah dihapus; OCR hanya dari `sekuritas-ai` Nanonets). Demo "auto-isi KTP" butuh AI asli di server (RAM ≥ 8 GB).
+- **Deploy baru**: `docker-compose.yml` ditulis ulang (path `../sekuritas-*`, APP_KEY/JWT persist, storage volume, EKYC disk public — dulu `s3` tanpa kredensial, timeout AI 180 dtk, port bisa diatur, ekyc-ai tidak diekspos). `.env.example` infra lengkap. **`DEPLOY_VPS.md`** menggantikan `prompt deploy server.md` (usang, pernah berisi API key).
+- **Fix Docker**: `.dockerignore` di api/web/cms/ai; web & CMS `npm ci` pakai lockfile (dulu `npm install` tanpa lock → gagal ERESOLVE); CMS terima `NUXT_PUBLIC_FRONTEND_BASE` (link referral); entrypoint API tidak generate APP_KEY bila sudah dari env; `config('app.frontend_url')` untuk link aktivasi.
+- **sekuritas-ai**: Dockerfile `ARG WITH_MODELS` (pasang llama-cpp/InsightFace/ONNX/Tesseract), `scripts/download_models.sh` (nama file cocok dgn config — dulu mmproj beda nama).
+- **Tutorial** (`TUTORIAL_DEMO_EKYC.md`, `CARA_MENJALANKAN.md`) disesuaikan dengan alur NYATA: daftar email+aktivasi (bukan OTP/PIN), pembukaan rekening 1 alur 5 langkah.
+- **Riset desain danapathi.co.id** → `DESIGN_DANAPATHI.md` + screenshot di `design/referensi-danapathi/`. Belum diterapkan — tunggu keputusan warna (logo Victoria merah vs palet navy/hijau).
+
 ## ⏭️ Sisa (butuh kredensial/aksi klien atau run manual)
 - **N-1 WAJIB**: `bash install-all.sh` → setup `sekuritas-api` → `migrate:fresh --seed` → jalankan (verifikasi end-to-end). Belum dijalankan di sini.
 - Aktifkan integrasi ASLI (kredensial klien): Midtrans (`PAYMENT_GATEWAY=midtrans`), S-INVEST (`SINVEST_DRIVER=ksei`), Privy, model AI (`OCR_ENGINE=paddle` dst di `sekuritas-ai`).

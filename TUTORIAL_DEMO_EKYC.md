@@ -2,80 +2,48 @@
 
 Panduan langkah-demi-langkah untuk **merekam video demo**. Tiga peran: **Nasabah**, **Ops**, **Super Admin**. Alur inti: nasabah daftar → **eKYC** → data → transaksi; ops **review KYC + terbitkan SID**; super admin kelola semua.
 
-> Mode demo: `EKYC_PROVIDER=stub`, `PAYMENT_GATEWAY=mock`, `SINVEST_DRIVER=mock`, `MAIL_MAILER=log`. Semua jalan tanpa kredensial pihak ketiga.
+> Mode demo: `PAYMENT_GATEWAY=mock`, `SINVEST_DRIVER=mock`. Semua jalan tanpa kredensial pihak ketiga.
+>
+> **Penting soal eKYC:** OCR KTP sekarang **hanya** dibaca oleh server AI (`sekuritas-ai`, Nanonets-OCR).
+> - `EKYC_PROVIDER=fastapi` + model asli → foto KTP **mengisi form otomatis** (disarankan untuk demo ke klien — lihat `DEPLOY_VPS.md` mode A).
+> - `EKYC_PROVIDER=stub` → alur & skor tetap jalan, tetapi **NIK/nama tidak terisi otomatis** (ketik manual di langkah Data Pribadi).
 
 ---
 
 ## 0. Persiapan sebelum rekaman
 
-### 0a. CARA MENJALANKAN (dari nol) — lakukan sekali
-> Butuh: PHP 8.2+, Composer, Node 18/20+, (opsional Python 3.11+ untuk AI). PostgreSQL **tidak wajib** — pakai SQLite biar cepat.
+### 0a. Demo dari SERVER (disarankan untuk klien)
+Ikuti **`DEPLOY_VPS.md`** → buka `https://app.DOMAIN` (nasabah) & `https://cms.DOMAIN` (admin).
+HTTPS diperlukan agar tombol **Buka Kamera** bisa dipakai di HP.
 
-**1) Install semua dependency (1 perintah):**
+### 0b. Demo LOKAL (laptop) — lakukan sekali
+> Butuh: PHP 8.2+, Composer, Node 20, (opsional Python **3.11** untuk AI). Tidak perlu PostgreSQL — otomatis pakai SQLite.
+> Semua repo di-clone **sejajar** di `freelance/sekuritas/` (sekuritas-api, -frontend, -cms, -ai, -mobile, -infra).
+
 ```bash
 cd /Users/user/Documents/freelance/sekuritas
-bash install-all.sh
+bash sekuritas-infra/install-all.sh     # install semua + .env + SQLite + migrate:fresh --seed
 ```
-
-**2) Backend API** (`sekuritas-api`) — terminal 1:
+Lalu 3 terminal:
 ```bash
-cd sekuritas-api
-cp .env.example .env
-php artisan key:generate
-php artisan jwt:secret --force
-touch database/database.sqlite
+cd sekuritas-api && php artisan serve --port=8000          # cek http://localhost:8000/api/health
+cd sekuritas-frontend && npm run dev                        # http://localhost:3000
+cd sekuritas-cms && npm run dev -- --port 3001              # http://localhost:3001
 ```
-Edit `.env` → set baris ini (hapus DB_HOST/PORT/USERNAME/PASSWORD bila ada):
-```
-DB_CONNECTION=sqlite
-DB_DATABASE=/Users/user/Documents/freelance/sekuritas/sekuritas-api/database/database.sqlite
-MAIL_MAILER=log
-EKYC_PROVIDER=stub
-PAYMENT_GATEWAY=mock
-SINVEST_DRIVER=mock
-FRONTEND_URL=http://localhost:3000
-```
-Lalu isi data demo + jalankan:
+AI lokal (opsional, mode stub — model asli butuh RAM besar, lebih cocok di server):
 ```bash
-php artisan migrate:fresh --seed
-php artisan storage:link
-php artisan serve --port=8000
+cd sekuritas-ai && .venv/bin/uvicorn app.main:app --port 8001
+# sekuritas-api/.env: EKYC_PROVIDER=fastapi, EKYC_FASTAPI_URL=http://localhost:8001, EKYC_FASTAPI_KEY=<EKYC_AI_API_KEY di sekuritas-ai/.env>
 ```
-Cek: buka http://localhost:8000/api/health → `{"status":"ok"}`.
+Reset data demo kapan saja: `cd sekuritas-api && php artisan migrate:fresh --seed`.
 
-**3) Web depan** (`sekuritas-frontend`) — terminal 2:
-```bash
-cd sekuritas-frontend
-echo "NUXT_PUBLIC_API_BASE=http://localhost:8000/api" > .env
-npm run dev            # http://localhost:3000
-```
-
-**4) CMS admin** (`sekuritas-cms`) — terminal 3:
-```bash
-cd sekuritas-cms
-printf "NUXT_PUBLIC_API_BASE=http://localhost:8000/api/cms\nNUXT_PUBLIC_FRONTEND_BASE=http://localhost:3000\n" > .env
-npm run dev -- --port 3001    # http://localhost:3001
-```
-
-**5) AI eKYC (OPSIONAL)** — hanya jika mau OCR/liveness "nyata". Default `EKYC_PROVIDER=stub` sudah cukup:
-```bash
-cd sekuritas-ai
-python3 -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
-cp .env.example .env      # set EKYC_AI_API_KEY=rahasia123
-uvicorn app.main:app --reload --port 8001
-# lalu di sekuritas-api/.env: EKYC_PROVIDER=fastapi, EKYC_FASTAPI_URL=http://localhost:8001, EKYC_FASTAPI_KEY=rahasia123
-```
-
-> Kalau `migrate:fresh --seed` error → cek path SQLite di `.env` sudah absolut & benar. Detail & troubleshooting: `CARA_MENJALANKAN.md`.
-
-### 0b. Service & URL (setelah jalan)
-| Service | URL | Cara start |
+### 0c. Service & URL
+| Service | Lokal | Server |
 |---|---|---|
-| API (Laravel) | http://localhost:8000 | `php artisan serve --port=8000` |
-| Web depan (nasabah) | http://localhost:3000 | `npm run dev` |
-| CMS admin | http://localhost:3001 | `npm run dev -- --port 3001` |
-| AI eKYC (opsional) | http://localhost:8001 | `uvicorn app.main:app --port 8001` |
+| API (Laravel) | http://localhost:8000 | https://api.DOMAIN |
+| Web depan (nasabah) | http://localhost:3000 | https://app.DOMAIN |
+| CMS admin | http://localhost:3001 | https://cms.DOMAIN |
+| AI eKYC | http://localhost:8001 (opsional) | internal (tidak publik) |
 
 **Akun demo (hasil seed):**
 | Peran | Email | Password |
@@ -84,8 +52,12 @@ uvicorn app.main:app --reload --port 8001
 | Ops | `ops@sekuritas-demo.id` | `Ops@123456` |
 | Nasabah (10 org) | mis. `budi.santoso@mail.test` | `Nasabah@123` |
 
-**Bahan:** siapkan 1 foto KTP (boleh contoh/dummy) & 1 foto wajah untuk di-upload/scan.
-**OTP demo web:** `123456`.
+**Bahan:** 1 foto KTP (contoh: `sekuritas-infra/design/ktp.jpeg`) & 1 foto selfie sambil memegang KTP.
+**Email aktivasi:** kalau `MAIL_MAILER=log`, ambil link aktivasi dari log:
+- lokal: `grep -o 'aktivasi?token=[A-Za-z0-9]*' sekuritas-api/storage/logs/laravel.log | tail -1`
+- server: `docker compose exec api grep -o 'aktivasi?token=[A-Za-z0-9]*' storage/logs/laravel.log | tail -1`
+
+lalu buka `<URL web>/aktivasi?token=...`. Atau lewati pendaftaran dengan login nasabah seed.
 
 > Tips rekaman: buka 2 browser / mode incognito terpisah — satu untuk **Nasabah** (`:3000`), satu untuk **Admin** (`:3001`) — agar bisa berpindah peran mulus.
 
@@ -100,32 +72,29 @@ Narasi: "Ini portal Victoria Sekuritas."
 3. Klik **Bandingkan** → pilih 2–3 reksadana → tampil tabel perbandingan.
 4. Klik **Promo** & **Artikel** sekilas.
 
-### A2. Daftar akun — 30 dtk
-1. Klik **Daftar** → masukkan **nomor HP** → centang S&K → **Selanjutnya**.
-2. Masukkan **OTP `123456`** → buat **PIN** (6 digit) → konfirmasi PIN.
-3. Otomatis masuk ke dashboard nasabah.
+### A2. Daftar akun (alur ala CGS: email → aktivasi) — 45 dtk
+1. Klik **Daftar** (`/register`) → isi **Email**, **Password** (min. 8), **Konfirmasi Password** → centang S&K → **Daftar**.
+2. Tampil **"Cek Email Anda"** → buka email **aktivasi** (atau ambil link dari log, lihat bagian 0) → klik link → halaman **Akun berhasil diaktivasi**.
+3. Klik **Masuk Sekarang** → login email + password → otomatis diarahkan ke **Pembukaan Rekening Online** (`/pembukaan-rekening/ekyc`).
 
-### A3. ⭐ eKYC (BINTANG UTAMA) — 1.5 menit
-1. Dari dashboard/menu, buka **Verifikasi** → halaman **`/pembukaan-rekening/ekyc`**
-   (atau di halaman KYC klik kartu **"Coba Verifikasi Otomatis (eKYC)"**).
-2. **Langkah 1 — Foto e-KTP:** klik area upload → pilih foto KTP.
-   - Narasi: "OCR gratis on-device membaca NIK & nama otomatis."
-   - Tampil **"Data terbaca otomatis"** (NIK/Nama) → klik **Proses OCR**.
-3. **Langkah 2 — Selfie (Liveness):** ambil/pilih foto wajah → klik **Cek Liveness & Wajah**.
-   - Tampil **Liveness: LOLOS** + **Face Match: xx%**.
-4. **Langkah 3 — Pencocokan Wajah:** tampil skor kecocokan → **Lanjut**.
-5. **Langkah 4 — Tanda Tangan Digital:** gambar tanda tangan di kanvas → **Kirim & Verifikasi**.
-6. **Langkah 5 — Hasil:** tampil **skor akhir** + keputusan (**Terverifikasi / Review / Ditolak**) beserta rincian OCR/Liveness/Face.
-   - Narasi: "Sistem menghitung skor & memutuskan otomatis. Data ini masuk ke admin untuk verifikasi akhir."
-7. Klik **Lanjut: Lengkapi Data**.
+### A3. ⭐ Pembukaan Rekening + eKYC (BINTANG UTAMA) — 2.5 menit
+Satu alur **5 langkah** (stepper di atas: Verifikasi → Data Pribadi → Data Pekerjaan → Informasi Tambahan → Persyaratan).
+1. **Verifikasi — Foto e-KTP:** pilih **Upload File** atau **Buka Kamera** (bingkai KTP) → muncul "Membaca KTP…".
+   - Tampil **"Data terbaca otomatis"** (NIK, Nama, TTL, Kelamin, Alamat) + badge **Verifikasi NIK: Valid**.
+   - Narasi: "AI membaca KTP dan mengisi form otomatis; NIK divalidasi (demo: parser NIK, produksi: Dukcapil)."
+   - *(Mode stub: kotak ini tidak muncul — lanjut dan isi data manual.)*
+2. **Data Pribadi:** sudah terisi dari KTP → lengkapi nama ibu kandung, status nikah, pendidikan → **Berikutnya**.
+3. **Data Pekerjaan:** pekerjaan, nama perusahaan, penghasilan, sumber dana → **Berikutnya**.
+4. **Informasi Tambahan:** tujuan investasi, pengalaman, tahu dari mana → **Berikutnya**.
+5. **Persyaratan & Ketentuan:**
+   - Baca S&K → centang persetujuan.
+   - **Selfie dengan e-KTP** (Upload / Kamera: wajah di oval, KTP di kotak bawah) → dipakai untuk **liveness + face match**.
+   - (Opsional) foto **NPWP** & **Buku Tabungan**.
+   - Gambar **Tanda Tangan** & **Paraf** di kanvas → **Submit**.
+6. Tampil **"Pengajuan Terkirim!"** + **Skor eKYC** & status *Pending (menunggu review)*.
+   - Narasi: "Sistem menghitung skor OCR + liveness + kecocokan wajah. Data masuk ke admin untuk verifikasi akhir."
 
-### A4. Lengkapi data pembukaan rekening — 45 dtk
-1. **Data Pribadi** (NIK, nama ibu, TTL, alamat, dsb) → **Berikutnya**.
-2. **Data Pekerjaan** (pekerjaan, penghasilan, sumber dana) → **Berikutnya**.
-3. **Informasi Tambahan** (tujuan investasi) → centang pernyataan → **Kirim Data**.
-   - Narasi: "Pengajuan dikirim, menunggu verifikasi admin."
-
-### A5. (Opsional) Promo via link referral — 30 dtk
+### A4. (Opsional) Promo via link referral — 30 dtk
 1. Buka link promo `http://localhost:3000/promo/<KODE>` (kode dari event di CMS).
 2. Klik **Ikuti Event** → (kalau sudah login) tercatat; badge "datang dari promo" muncul saat daftar.
 
@@ -155,7 +124,7 @@ Ops = verifikasi KYC & terbitkan SID (tidak bisa kelola produk/user — itu supe
 
 ### B4. Kelola Promo/Event (kalau ops diberi akses) — 45 dtk
 1. Menu **Event & Promo** → **Tambah Event** (isi nama, tipe, MI, periode, kuota reward).
-2. Klik **Salin link** → itulah link referral untuk kampanye (lihat A5).
+2. Klik **Salin link** → itulah link referral untuk kampanye (lihat A4).
 3. Klik **Leaderboard** pada sebuah event → daftar peserta + reward eligible → **Export CSV**.
 
 ---
@@ -211,7 +180,8 @@ Super admin = semua akses.
 
 ## Ringkasan alur untuk narasi video
 ```
-NASABAH: daftar → eKYC (KTP→OCR→selfie→liveness→face→ttd→verifikasi) → lengkapi data → kirim
+NASABAH: daftar email → aktivasi → login → pembukaan rekening 5 langkah
+         (KTP→OCR auto-isi → data pribadi → pekerjaan → info tambahan → selfie+KTP, ttd & paraf) → submit
    ↓ (data masuk sistem)
 OPS: review KYC + lihat skor eKYC → Approve → "Kirim ke S-INVEST" → SID & IFUA terbit
    ↓ (nasabah jadi AKTIF)
@@ -223,6 +193,6 @@ SUPER ADMIN: kelola produk/NAV/artikel/event/laporan + pantau transaksi (kontrol
 **Urutan rekaman yang disarankan:** A (nasabah: daftar→eKYC→data) → B (ops: approve→kirim S-INVEST) → D (nasabah: beli produk) → C (super admin: kelola & pantau).
 
 ## Catatan yang perlu diucapkan di video
-- eKYC berjalan **mode stub** (nol biaya) untuk demo; di produksi tinggal ganti ke model asli (PaddleOCR/InsightFace) atau vendor tersertifikasi — arsitektur adapter sudah siap.
+- eKYC memakai model AI open-source yang di-host sendiri (Nanonets-OCR untuk KTP, InsightFace untuk kecocokan wajah, Facenox untuk liveness) — tanpa biaya per transaksi. Bisa diganti vendor tersertifikasi (Privy/ADVANCE.AI dsb.) karena arsitektur adapter sudah siap.
 - Penerbitan **SID** & **pembayaran** juga mode simulasi; siap disambung ke **KSEI** & **Midtrans** saat kredensial klien tersedia.
-- Email (aktivasi/lengkapi akun) tersimpan di `sekuritas-api/storage/logs/laravel.log` (karena `MAIL_MAILER=log`).
+- Bila `MAIL_MAILER=log`, email (aktivasi/lengkapi akun) tersimpan di `storage/logs/laravel.log` API; di server demo sebaiknya pakai SMTP agar email benar-benar terkirim.

@@ -3,6 +3,9 @@
 Panduan menjalankan seluruh komponen di komputer lokal untuk demo/development.
 Ada 2 cara: **A) Manual per komponen** (paling jelas) atau **B) Docker Compose** (sekali jalan).
 
+> **Paling cepat:** `bash sekuritas-infra/install-all.sh` dari folder `freelance/sekuritas/` — install semua dependency + `.env` SQLite + migrate/seed otomatis.
+> Semua repo di-clone **sejajar** (sekuritas-api, -frontend, -cms, -ai, -mobile, -infra). Deploy server: **`DEPLOY_VPS.md`**.
+
 Port yang dipakai (lokal):
 | Komponen | URL |
 |---|---|
@@ -15,9 +18,9 @@ Port yang dipakai (lokal):
 
 ## Prasyarat
 - **PHP 8.2+** & **Composer**
-- **PostgreSQL 14+** (buat database kosong, mis. `victoria`)
+- **PostgreSQL 14+** (opsional — lokal cukup SQLite)
 - **Node.js 18/20+** & **npm**
-- **Python 3.11+** (untuk `sekuritas-ai`)
+- **Python 3.11** (untuk `sekuritas-ai`; 3.13/3.14 belum didukung dependency-nya)
 - **Flutter 3+** (opsional, untuk mobile)
 - (Opsional) **Docker + Docker Compose** untuk cara B
 
@@ -63,7 +66,7 @@ Cek: http://localhost:8000/api/health → `{"status":"ok"}`
 ### 2. Web depan — `sekuritas-frontend`
 ```bash
 cd sekuritas-frontend
-npm install                    # termasuk tesseract.js (OCR KTP gratis)
+npm install
 ```
 Buat file `.env`:
 ```
@@ -131,25 +134,20 @@ flutter build apk --release --dart-define=API_BASE=https://api.hamztech.my.id/ap
 ---
 
 ## B) Docker Compose (sekali jalan)
-Dari folder `sekuritas/` (root, tempat `docker-compose.yml`):
+Dari folder **`sekuritas-infra/`** (compose memakai repo sejajar `../sekuritas-*`):
 ```bash
+cd sekuritas-infra
+cp .env.example .env     # isi APP_KEY, JWT_SECRET, EKYC_AI_API_KEY; untuk lokal set PUBLIC_*=http://localhost:PORT
 docker compose up -d --build
 ```
-Ini menyalakan postgres, redis, minio, api, ekyc-ai, frontend, cms.
-Setelah container `api` naik, jalankan migrasi + seed:
-```bash
-docker compose exec api php artisan migrate:fresh --seed
-docker compose exec api php artisan storage:link
-```
-Akses: web http://localhost:3000, cms http://localhost:3001, api http://localhost:8080
-(port di compose bisa disesuaikan di `docker-compose.yml`).
-
----
+Menyalakan postgres, api, ekyc-ai, frontend, cms. Migrasi + seed jalan **otomatis** saat container `api` start.
+Akses: web http://localhost:3000, cms http://localhost:3001, api http://localhost:8080.
+Detail (mode AI asli vs stub, domain, HTTPS): **`DEPLOY_VPS.md`**.
 
 ## Alur demo yang bisa dicoba
 1. **Web depan** (`:3000`): lihat Home, Produk (filter + detail + grafik NAV), **Bandingkan**, **Promo**, Artikel.
-2. **Daftar**: `/register` (OTP demo `123456`) → buat PIN. Coba juga lewat link promo `/promo/<KODE>` → cek badge referral.
-3. **eKYC**: login → `/pembukaan-rekening/ekyc` → ambil foto KTP (OCR gratis on-device auto-isi NIK/Nama) → selfie → tanda tangan → verifikasi (lihat skor & keputusan).
+2. **Daftar**: `/register` (email + password) → link aktivasi (di `storage/logs/laravel.log` bila `MAIL_MAILER=log`) → login. Coba juga lewat link promo `/promo/<KODE>`.
+3. **Pembukaan rekening + eKYC**: login → `/pembukaan-rekening/ekyc` (5 langkah) → foto KTP (auto-isi bila AI asli aktif) → data pribadi/pekerjaan/info → selfie + KTP, ttd & paraf → submit (lihat skor).
 4. **CMS** (`:3001`): login admin → menu **Event & Promo** (buat event, salin link referral, lihat leaderboard, export CSV), **KYC** (lihat panel skor eKYC + approve/reject), Produk, Artikel.
 5. **Email**: karena `MAIL_MAILER=log`, isi email aktivasi/lengkapi-akun muncul di `sekuritas-api/storage/logs/laravel.log`.
 
