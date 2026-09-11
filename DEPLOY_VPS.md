@@ -48,8 +48,10 @@ curl -fsSL https://get.docker.com | sh
 fallocate -l 4G /swapfile && chmod 600 /swapfile && mkswap /swapfile && swapon /swapfile
 echo '/swapfile none swap sw 0 0' >> /etc/fstab
 
-# Firewall: hanya SSH + HTTP/HTTPS
-ufw allow OpenSSH && ufw allow 'Nginx Full' && ufw --force enable
+# Firewall: SSH + HTTP/HTTPS. PENTING: kalau SSH bukan port 22 (mis. 717), buka port itu DULU
+# sebelum enable — `ufw allow OpenSSH` hanya membuka 22 dan bisa mengunci Anda dari server.
+SSH_PORT=$(ss -tlnp | awk '/sshd/ {split($4,a,":"); print a[length(a)]; exit}')
+ufw allow ${SSH_PORT:-22}/tcp && ufw allow 'Nginx Full' && ufw --force enable
 ```
 
 ## 4. Clone semua repo (sejajar)
@@ -129,29 +131,39 @@ satu foto KTP butuh ±30–90 detik. Kalau RAM kurang, container `ekyc-ai` akan 
 (`docker compose logs ekyc-ai`) → pakai §6c atau tambah RAM.
 
 ## 6c. Mode A "hybrid": AI dijalankan di laptop saat demo
-Server tetap mode ringan; OCR/liveness/face-match dikerjakan laptop (Mac M1 memakai GPU Metal → cepat)
-yang dibuka ke internet lewat **ngrok**. Syarat: laptop menyala & online selama demo, RAM laptop bebas ±4 GB
-(matikan Docker/colima & aplikasi berat).
-```bash
-# --- di LAPTOP (sekali) ---
-cd sekuritas-ai
-bash scripts/download_models.sh                                   # ±3 GB
-.venv/bin/pip install -r requirements-models.txt                  # llama-cpp-python otomatis pakai Metal di Mac
-brew install tesseract tesseract-lang
-# .env sekuritas-ai: OCR_ENGINE=nanonets, FACE_MATCH_ENGINE=insightface, LIVENESS_ENGINE=facenox-onnx,
-#   SELFIE_KTP_ENGINE=nanonets_tesseract, ALLOW_MODEL_DOWNLOADS=true, EKYC_AI_API_KEY=<sama dgn server>
+Server tetap ringan; OCR/liveness/face-match ASLI dikerjakan laptop (Mac M1 → GPU Metal, cepat) yang dibuka
+ke internet lewat **Cloudflare Tunnel** dengan hostname tetap (mis. `https://ai.hamztech.my.id`, gratis,
+URL tidak berubah). Syarat: DNS domain di Cloudflare, laptop menyala & online selama demo, RAM laptop
+bebas ±4 GB (matikan Docker/colima & aplikasi berat).
 
-# --- di LAPTOP (setiap demo) ---
-.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8001
-ngrok http 8001                     # catat URL https://xxxx.ngrok-free.app
-
-# --- di SERVER ---
-# .env infra: EKYC_PROVIDER=fastapi, EKYC_FASTAPI_URL=https://xxxx.ngrok-free.app, EKYC_WITH_MODELS=false
-docker compose up -d api            # api memakai URL baru; service ekyc-ai lokal boleh dimatikan:
-docker compose stop ekyc-ai
 ```
-Keamanan: semua endpoint AI wajib header `X-Api-Key` (= `EKYC_AI_API_KEY`), jadi URL ngrok tidak bisa
-dipakai orang lain tanpa kunci. URL ngrok gratis berubah tiap dijalankan → update `.env` server & `docker compose up -d api`.
+Browser ─► demo./cms./api.<domain> (VPS) ──► api ──HTTPS + X-Api-Key──► ai.<domain> (Cloudflare) ──tunnel──► laptop :8001
+```
+
+**Di laptop** (repo `sekuritas-ai`):
+```bash
+bash scripts/laptop-ai.sh setup   # sekali: dependency + model ±3 GB + login Cloudflare + tunnel + DNS ai.<domain>
+bash scripts/laptop-ai.sh run     # setiap demo (biarkan terminal terbuka)
+bash scripts/laptop-ai.sh test    # cek dari internet
+```
+Sebelum `setup`: **hapus record A `ai`** di Cloudflare DNS (tunnel membuat CNAME-nya sendiri).
+`EKYC_AI_API_KEY` di laptop harus sama dengan di server.
+
+**Di server** (`.env` infra):
+```
+EKYC_PROVIDER=fastapi
+EKYC_FASTAPI_URL=https://ai.<domain>
+EKYC_WITH_MODELS=false          # service ekyc-ai di server = cadangan mode stub
+OCR_ENGINE=stub
+FACE_MATCH_ENGINE=stub
+LIVENESS_ENGINE=stub
+SELFIE_KTP_ENGINE=stub
+NANONETS_PRELOAD_ON_START=false
+EKYC_FASTAPI_TIMEOUT=90         # Cloudflare memutus respons > 100 dtk
+```
+Laptop mati / tunnel putus → eKYC error. Cadangan cepat: set `EKYC_FASTAPI_URL=http://ekyc-ai:8000`
+lalu `docker compose up -d api` (kembali ke stub). Alternatif tanpa Cloudflare: `ngrok http 8001`
+(URL berubah tiap dijalankan → update `EKYC_FASTAPI_URL`).
 
 ## 7. Build & jalankan
 ```bash

@@ -82,6 +82,10 @@ services:
       PAYMENT_GATEWAY: ${PAYMENT_GATEWAY:-mock}
       SINVEST_DRIVER: ${SINVEST_DRIVER:-mock}
       DUKCAPIL_DRIVER: nikparser
+      # Password akun demo (seed). Di server publik WAJIB diisi — default-nya tertulis di dokumen publik.
+      DEMO_ADMIN_PASSWORD: ${DEMO_ADMIN_PASSWORD:-}
+      DEMO_OPS_PASSWORD: ${DEMO_OPS_PASSWORD:-}
+      DEMO_MEMBER_PASSWORD: ${DEMO_MEMBER_PASSWORD:-}
     volumes:
       # Upload KTP/selfie/ttd/banner tetap ada walau container di-rebuild.
       - api-storage:/var/www/html/storage/app

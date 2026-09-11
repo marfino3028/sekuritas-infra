@@ -55,6 +55,9 @@ Reset data demo kapan saja: `cd sekuritas-api && php artisan migrate:fresh --see
 | **Member baru** (sudah aktivasi, BELUM KYC — demo eKYC dari awal) | Web | `member.baru@danapathi-demo.id` | `member.baru@sekuritas-demo.id` | `Member@123` |
 | 10 nasabah acak (status KYC campur) | Web | mis. `budi.santoso@mail.test` | sama | `Nasabah@123` |
 
+> **Di server demo** password-nya BUKAN default di atas (repo publik) — diambil dari `DEMO_*_PASSWORD` di `.env` server;
+> catatan lengkapnya ada di file lokal `AKUN_DEMO.md` (tidak di-commit).
+>
 > Setelah "Member baru" dipakai demo eKYC, datanya sudah terisi. Untuk mengulang demo: reset data
 > (`php artisan migrate:fresh --seed`, di server: `docker compose exec api php artisan migrate:fresh --seed --force`)
 > atau daftar akun baru lewat halaman Daftar.

@@ -12,3 +12,7 @@ env/
 envsource/
 
 .DS_Store
+
+# Data sensitif lokal (IP/port SSH, password demo, API key) — JANGAN di-commit (repo publik)
+AKUN_DEMO.md
+PROMPT_SERVER_LOKAL.md
