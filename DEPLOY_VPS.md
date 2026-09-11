@@ -61,6 +61,14 @@ done
 ```
 `GIT_LFS_SKIP_SMUDGE=1` = aset desain (gif/png besar di `sekuritas-infra/design`) tidak ikut diunduh — server tidak butuh.
 
+**Versi Danapathi** (tampilan & data Danapathi Asset Management) ada di branch `danapathi` untuk
+`sekuritas-api`, `sekuritas-frontend`, `sekuritas-cms` (dan `sekuritas-mobile`). `sekuritas-ai` & `sekuritas-infra` tetap `main`:
+```bash
+cd /opt/victoria
+for r in sekuritas-api sekuritas-frontend sekuritas-cms; do git -C $r checkout danapathi; done
+```
+Lalu di `.env` (langkah 6) set `APP_NAME="Danapathi API"` dan `MAIL_FROM_NAME="Danapathi Asset Management"`.
+
 ## 5. Unduh model AI (mode A saja, ±3 GB)
 ```bash
 bash /opt/victoria/sekuritas-ai/scripts/download_models.sh
@@ -86,6 +94,24 @@ Tempel 3 nilai di atas, lalu isi:
   `LIVENESS_ENGINE=stub`, `SELFIE_KTP_ENGINE=stub`, `NANONETS_PRELOAD_ON_START=false`.
 
 > Jangan ubah `APP_KEY` / `JWT_SECRET` setelah jalan — semua sesi login jadi tidak valid.
+
+## 6b. Server kecil / sudah dipakai aplikasi lain
+Perkiraan RAM yang dipakai stack ini **saat berjalan**:
+
+| Komponen | Mode B (stub) | Mode A (AI asli) |
+|---|---|---|
+| postgres + api (nginx+php-fpm) | ±300–450 MB | ±300–450 MB |
+| frontend (nginx) + cms (serve) | ±80 MB | ±80 MB |
+| ekyc-ai | ±80 MB | ±3,5–4,5 GB (Nanonets 3 GB + InsightFace) |
+| **Total** | **±0,5–0,7 GB** | **±4–5 GB** |
+
+Saat **build** pertama, `nuxt generate` butuh ±1,5–2 GB per aplikasi dan compose membangun paralel.
+Di server dengan RAM bebas < 3 GB, build satu per satu agar tidak kehabisan RAM/swap:
+```bash
+COMPOSE_PARALLEL_LIMIT=1 docker compose build
+docker compose up -d
+```
+Cek sisa RAM dulu: `free -h` (lihat kolom *available*) dan `nproc`. Mode A butuh *available* ≥ 5 GB.
 
 ## 7. Build & jalankan
 ```bash
@@ -131,7 +157,7 @@ certbot --nginx -d app.DOMAIN_ASLI.com -d cms.DOMAIN_ASLI.com -d api.DOMAIN_ASLI
 
 ## 9. Uji akhir (checklist sebelum demo)
 - [ ] `https://api.DOMAIN/api/health` → ok
-- [ ] `https://app.DOMAIN` tampil, katalog reksa dana terisi (10 produk)
+- [ ] `https://app.DOMAIN` tampil, katalog reksa dana terisi (10 produk Victoria / 5 produk Danapathi)
 - [ ] `https://cms.DOMAIN` → login `admin@sekuritas-demo.id` / `Admin@123456`
 - [ ] Daftar akun baru → email aktivasi masuk (atau ambil dari log:
       `docker compose exec api grep -o 'aktivasi?token=[A-Za-z0-9]*' storage/logs/laravel.log | tail -1`)

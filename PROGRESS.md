@@ -58,6 +58,14 @@ Repo lokal: `sekuritas-api` (Laravel), `sekuritas-cms` (Nuxt admin), `sekuritas-
 - **Tutorial** (`TUTORIAL_DEMO_EKYC.md`, `CARA_MENJALANKAN.md`) disesuaikan dengan alur NYATA: daftar email+aktivasi (bukan OTP/PIN), pembukaan rekening 1 alur 5 langkah.
 - **Riset desain danapathi.co.id** → `DESIGN_DANAPATHI.md` + screenshot di `design/referensi-danapathi/`. Belum diterapkan — tunggu keputusan warna (logo Victoria merah vs palet navy/hijau).
 
+## ✅ SELESAI (sesi 7 — 2026-09-11: versi Danapathi + perbaikan CMS)
+- **Branch `danapathi`** (api/frontend/cms/mobile): redesign ala danapathi.co.id + logo & data Danapathi. Lihat `DESIGN_DANAPATHI.md` §10.
+- **Bug lama CMS diperbaiki (juga di `main`)**: endpoint `/cms/dashboard`, `/cms/transactions`, `/cms/reports/*` (CSV) dibuat — dulu 404;
+  komponen `<StatusBadge>/<StatsCard>` tak pernah tampil (auto-import prefix `Ui`); `InfoField` & ikon sidebar kosong (template string
+  tanpa compiler runtime); dashboard crash `charCodeAt`; form produk selalu 422; data mock MI lain dihapus.
+- **Mobile `main` tidak bisa build**: `kyc_api.dart`, `login_screen.dart`, `check_email_screen.dart` tidak pernah ter-commit → dibuat ulang.
+- Infra: `APP_NAME`/`MAIL_FROM_NAME` via `.env`; DEPLOY_VPS §4 (branch danapathi) & §6b (server kecil, build berurutan).
+
 ## ⏭️ Sisa (butuh kredensial/aksi klien atau run manual)
 - **N-1 WAJIB**: `bash install-all.sh` → setup `sekuritas-api` → `migrate:fresh --seed` → jalankan (verifikasi end-to-end). Belum dijalankan di sini.
 - Aktifkan integrasi ASLI (kredensial klien): Midtrans (`PAYMENT_GATEWAY=midtrans`), S-INVEST (`SINVEST_DRIVER=ksei`), Privy, model AI (`OCR_ENGINE=paddle` dst di `sekuritas-ai`).

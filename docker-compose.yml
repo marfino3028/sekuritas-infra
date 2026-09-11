@@ -41,7 +41,7 @@ services:
       postgres:
         condition: service_healthy
     environment:
-      APP_NAME: "Victoria Sekuritas API"
+      APP_NAME: ${APP_NAME:-Victoria Sekuritas API}
       APP_ENV: production
       APP_DEBUG: "false"
       APP_URL: ${PUBLIC_API_ORIGIN:-http://localhost:8080}
@@ -69,8 +69,8 @@ services:
       MAIL_USERNAME: ${MAIL_USERNAME:-}
       MAIL_PASSWORD: ${MAIL_PASSWORD:-}
       MAIL_ENCRYPTION: ${MAIL_ENCRYPTION:-tls}
-      MAIL_FROM_ADDRESS: ${MAIL_FROM_ADDRESS:-noreply@victoria-sekuritas.co.id}
-      MAIL_FROM_NAME: "Victoria Sekuritas"
+      MAIL_FROM_ADDRESS: ${MAIL_FROM_ADDRESS:-noreply@example.com}
+      MAIL_FROM_NAME: ${MAIL_FROM_NAME:-Victoria Sekuritas}
       # eKYC: fastapi = pakai service ekyc-ai di bawah; stub = tanpa AI (OCR tidak auto-isi)
       EKYC_PROVIDER: ${EKYC_PROVIDER:-fastapi}
       EKYC_FASTAPI_URL: http://ekyc-ai:8000

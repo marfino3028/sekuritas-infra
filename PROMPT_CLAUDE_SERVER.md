@@ -2,29 +2,34 @@
 
 Cara pakai:
 1. SSH ke VPS sebagai root → install Claude Code: `curl -fsSL https://claude.ai/install.sh | bash` lalu jalankan `claude`.
-2. Ganti 4 nilai `<...>` di bawah, lalu tempel SELURUH blok prompt ke Claude.
+2. Ganti nilai `<...>` di bawah (domain, email, mode, versi, SMTP), lalu tempel SELURUH blok prompt ke Claude.
 
 ---
 
 ```
-Kamu di VPS Ubuntu baru (root). Tugas: deploy platform reksa dana "Victoria Sekuritas"
+Kamu di VPS Ubuntu baru (root). Tugas: deploy platform reksa dana (Victoria Sekuritas atau versi Danapathi)
 (Laravel API + FastAPI eKYC AI + 2 Nuxt SPA + Postgres) pakai Docker Compose, lalu verifikasi.
 
 DATA:
 - Domain utama     : <DOMAIN>              (mis. victoria-demo.com)
 - Subdomain        : app.<DOMAIN> (web nasabah), cms.<DOMAIN> (admin), api.<DOMAIN> (API)
 - Email certbot    : <EMAIL_CERTBOT>
-- Mode eKYC        : <A atau B>            (A = AI asli, butuh RAM ≥ 8 GB; B = stub tanpa AI)
+- Mode eKYC        : <A atau B>            (A = AI asli, butuh RAM available ≥ 5 GB; B = stub tanpa AI)
+- Versi/brand      : <victoria atau danapathi>
 - SMTP (opsional)  : <host|port|user|pass|from>  atau "log" kalau belum ada
 
 PANDUAN RESMI: setelah clone, baca /opt/victoria/sekuritas-infra/DEPLOY_VPS.md dan ikuti
 langkah 3–9 PERSIS. Ringkasnya:
-1. Cek resource dulu (nproc, free -h, df -h). Kalau mode A tapi RAM < 7.5 GB → STOP & lapor.
+1. Cek resource dulu (nproc, free -h, df -h, docker ps / ss -tlnp untuk port & app lain yang sudah jalan).
+   Mode A butuh RAM "available" ≥ 5 GB; kalau kurang → STOP & lapor. Port 80/443/3000/3001/8080 yang
+   sudah dipakai app lain → pakai API_PORT/WEB_PORT/CMS_PORT lain di .env, jangan matikan app orang lain.
 2. Install git, nginx, certbot (python3-certbot-nginx), curl, ufw, Docker (get.docker.com).
    Buat swap 4 GB bila belum ada. ufw: allow OpenSSH + 'Nginx Full'.
 3. Clone ke /opt/victoria (SEJAJAR) dengan GIT_LFS_SKIP_SMUDGE=1:
    sekuritas-infra, sekuritas-api, sekuritas-ai, sekuritas-frontend, sekuritas-cms
    dari https://github.com/marfino3028/<repo>.git
+   Versi danapathi: checkout branch `danapathi` di sekuritas-api, sekuritas-frontend, sekuritas-cms
+   (ai & infra tetap main), dan di .env set APP_NAME="Danapathi API", MAIL_FROM_NAME="Danapathi Asset Management".
 4. Mode A: bash /opt/victoria/sekuritas-ai/scripts/download_models.sh (±3 GB).
 5. cd /opt/victoria/sekuritas-infra && cp .env.example .env, lalu isi:
    - APP_KEY=base64:$(openssl rand -base64 32), JWT_SECRET & EKYC_AI_API_KEY = openssl rand -hex 32
@@ -34,7 +39,8 @@ langkah 3–9 PERSIS. Ringkasnya:
    - Mode B: EKYC_WITH_MODELS=false, OCR_ENGINE=stub, FACE_MATCH_ENGINE=stub, LIVENESS_ENGINE=stub,
      SELFIE_KTP_ENGINE=stub, NANONETS_PRELOAD_ON_START=false
    Simpan salinan secret ke /root/victoria-secrets.txt (chmod 600). JANGAN tampilkan secret di chat.
-6. docker compose up -d --build (bisa 15–25 menit). Pantau: docker compose ps, logs api (tunggu
+6. Kalau RAM available < 3 GB: `COMPOSE_PARALLEL_LIMIT=1 docker compose build` dulu, lalu
+   `docker compose up -d`. Selain itu: docker compose up -d --build (bisa 15–25 menit). Pantau: docker compose ps, logs api (tunggu
    "Application ready!"), logs ekyc-ai (mode A: model ter-load tanpa ImportError/Killed).
 7. Buat /etc/nginx/sites-available/victoria sesuai DEPLOY_VPS.md langkah 8 (api: client_max_body_size 10m,
    proxy_read_timeout 300s), enable, nginx -t, reload, lalu
@@ -42,7 +48,7 @@ langkah 3–9 PERSIS. Ringkasnya:
    (Pastikan dulu DNS A-record ketiga subdomain sudah mengarah ke IP VPS: dig +short app.<DOMAIN>.)
 8. VERIFIKASI & LAPORKAN hasil nyata tiap poin (jangan diasumsikan):
    a. curl https://api.<DOMAIN>/api/health → status ok
-   b. curl -s https://api.<DOMAIN>/api/products | cek ada 10 produk
+   b. curl -s https://api.<DOMAIN>/api/products | cek ada 10 produk (victoria) atau 5 produk (danapathi)
    c. curl -I https://app.<DOMAIN> dan https://cms.<DOMAIN> → 200
    d. Login CMS via API: POST https://api.<DOMAIN>/api/cms/auth/login
       email=admin@sekuritas-demo.id password=Admin@123456 → dapat token

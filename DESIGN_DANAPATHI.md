@@ -4,8 +4,9 @@ Diekstrak 2026-09-11 dari CSS asli situs (`assets/css/danapathi.css` + 7 blok `<
 lalu dicek ulang terhadap nilai *computed* di browser (1440px & 390px). Screenshot referensi:
 `design/referensi-danapathi/` (desktop-hero, desktop-full, mobile-full, halaman-reksadana).
 
-> Danapathi = **Manajer Investasi** (reksa dana), bukan broker. Yang diambil hanya **gaya visual**
-> (palet, tipografi, radius, pola layout) — **jangan** salin logo, foto, atau teks mereka.
+> Danapathi = **Manajer Investasi** (reksa dana), bukan broker. Danapathi adalah **klien** untuk versi
+> branch `danapathi` (logo & foto mereka boleh dipakai di situ). Untuk brand/klien lain, ambil hanya
+> **gaya visual** — jangan salin logo, foto, atau teks Danapathi.
 > Situs dibangun dengan Bootstrap 5 + Bootstrap Icons (tanpa Tailwind/framework JS).
 
 **Kesan umum:** terang & lapang. Putih dominan, **navy** untuk semua teks/judul/tombol utama,
@@ -174,11 +175,12 @@ const bgSoft = Color(0xFFF8FAFC); const border = Color(0xFFE5E7EB);
 // Font: google_fonts → PlusJakartaSans (judul) + Inter (body). Radius kartu 22, tombol 18.
 ```
 
-## 10. Catatan penerapan ke Victoria
-- Logo Victoria berwarna **merah** — kalau palet diganti navy/hijau, logo akan kontras dengan UI.
-  Perlu keputusan klien: (a) pakai palet Danapathi penuh + logo versi monokrom/navy, atau
-  (b) ambil **gaya** Danapathi (layout lapang, radius besar, bayangan halus, tipografi) tapi warna tetap merah Victoria.
-- Titik ubah utama: `sekuritas-frontend/tailwind.config.ts`, `sekuritas-cms/tailwind.config.ts`,
-  tema Flutter di `sekuritas-mobile/lib`, template email Blade di `sekuritas-api/resources/views`.
-- Layout yang perlu dibangun ulang (bukan sekadar warna): hero dengan foto + trust strip, kartu produk
-  gaya NAB ▲/▼, section simulasi investasi, footer 2 bar, header dengan CTA pill.
+## 10. Status penerapan
+**Sudah diterapkan (2026-09-11) di branch `danapathi`** — klien = PT Danapathi Asset Management, logo Danapathi dipakai:
+- `sekuritas-frontend`: tema Tailwind + `assets/css/tailwind.css` (.btn-cta/.btn-primary/.eyebrow/.h-section),
+  beranda baru (hero foto, trust strip, produk NAB, alur buka rekening, tentang+FAQ, simulasi, artikel), header/footer, auth & dashboard.
+- `sekuritas-cms`: palet navy/hijau, logo putih di sidebar & login.
+- `sekuritas-api`: 5 produk Danapathi (NAB sesuai situs; AUM & kinerja = angka demo), event, template email.
+- `sekuritas-mobile`: AppColors, logo, ikon launcher, nama app.
+- Aset logo: `design/asset+logo/danapathi*.png` (horizontal, horizontal-putih, ikon, lingkaran, bertumpuk) + `danapathi-hero.jpg`.
+Branch `main` tetap versi Victoria.
