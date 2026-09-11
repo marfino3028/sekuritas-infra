@@ -108,9 +108,10 @@ Perkiraan RAM yang dipakai stack ini **saat berjalan**:
 | **Total** | **±0,5–0,7 GB** | **±4–5 GB** |
 
 Saat **build** pertama, `nuxt generate` butuh ±1,5–2 GB per aplikasi dan compose membangun paralel.
-Di server dengan RAM bebas < 3 GB, build satu per satu agar tidak kehabisan RAM/swap:
+Di server dengan RAM bebas < 3 GB, build **satu service per perintah** (`COMPOSE_PARALLEL_LIMIT=1`
+TIDAK dipatuhi Docker Compose v2.39 — terbukti tetap paralel):
 ```bash
-COMPOSE_PARALLEL_LIMIT=1 docker compose build
+for s in api ekyc-ai frontend cms; do docker compose build $s; done
 docker compose up -d
 ```
 Cek sisa RAM dulu: `free -h` (lihat kolom *available*) dan `nproc`. Mode A butuh *available* ≥ 5 GB.
@@ -226,6 +227,13 @@ docker compose exec api php artisan migrate:fresh --seed --force
 # Lihat log
 docker compose logs -f --tail=100 api
 ```
+
+## Server dengan panel (aaPanel / BT Panel)
+Kalau `nginx` dikelola aaPanel (`/etc/nginx` tidak ada, biner di `/www/server/nginx`), **jangan** `apt install nginx`
+(bentrok port 80/443). Taruh vhost baru di `/www/server/panel/vhost/nginx/<nama>.conf` (isi sama seperti langkah 8),
+reload via aaPanel / `/www/server/nginx/sbin/nginx -s reload`, dan terbitkan sertifikat dengan
+`certbot certonly --webroot -w <root-site> -d ...` lalu arahkan `ssl_certificate` ke `/etc/letsencrypt/live/<nama>/`.
+Matikan cache global aaPanel untuk domain API/CMS/web agar respons API tidak ter-cache.
 
 ## Troubleshooting
 | Gejala | Penyebab / solusi |

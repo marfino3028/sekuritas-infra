@@ -12,6 +12,7 @@
 #   docker compose up -d --build
 # Panduan lengkap: DEPLOY_VPS.md
 
+# Nama project (container/volume/image). Override: COMPOSE_PROJECT_NAME di .env (mis. danapathi).
 name: victoria
 
 x-bind: &bind ${BIND_IP:-127.0.0.1}
@@ -22,13 +23,13 @@ services:
     image: postgres:16-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_DB: victoria
-      POSTGRES_USER: victoria
+      POSTGRES_DB: ${DB_NAME:-victoria}
+      POSTGRES_USER: ${DB_USER:-victoria}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-secret}
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U victoria"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-victoria}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -52,8 +53,8 @@ services:
       DB_CONNECTION: pgsql
       DB_HOST: postgres
       DB_PORT: 5432
-      DB_DATABASE: victoria
-      DB_USERNAME: victoria
+      DB_DATABASE: ${DB_NAME:-victoria}
+      DB_USERNAME: ${DB_USER:-victoria}
       DB_PASSWORD: ${DB_PASSWORD:-secret}
       CACHE_STORE: file
       CACHE_DRIVER: file

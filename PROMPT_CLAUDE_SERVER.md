@@ -43,7 +43,8 @@ PANDUAN RESMI: setelah clone, baca /opt/victoria/sekuritas-infra/DEPLOY_VPS.md. 
    - EKYC_AI_API_KEY = $(openssl rand -hex 32)  (mode C: pakai nilai yang diberikan user bila ada)
    - PUBLIC_API_ORIGIN=https://<API_HOST>, PUBLIC_FRONTEND_URL=https://<WEB_HOST>, PUBLIC_CMS_URL=https://<CMS_HOST>
    - DEMO_ADMIN_PASSWORD / DEMO_OPS_PASSWORD / DEMO_MEMBER_PASSWORD dari DATA
-   - Versi danapathi: APP_NAME="Danapathi API", MAIL_FROM_NAME="Danapathi Asset Management"
+   - Versi danapathi: APP_NAME="Danapathi API", MAIL_FROM_NAME="Danapathi Asset Management",
+     COMPOSE_PROJECT_NAME=danapathi, DB_NAME=danapathi, DB_USER=danapathi (tidak perlu docker-compose.override.yml)
    - SMTP bila diberikan, kalau tidak MAIL_MAILER=log
    - Mode B & C: EKYC_WITH_MODELS=false, OCR_ENGINE=stub, FACE_MATCH_ENGINE=stub, LIVENESS_ENGINE=stub,
      SELFIE_KTP_ENGINE=stub, NANONETS_PRELOAD_ON_START=false
@@ -51,10 +52,11 @@ PANDUAN RESMI: setelah clone, baca /opt/victoria/sekuritas-infra/DEPLOY_VPS.md. 
    - Port 8080/3000/3001 sudah dipakai app lain → set API_PORT/WEB_PORT/CMS_PORT ke port bebas (tetap BIND_IP=127.0.0.1)
    Simpan semua secret ke /root/victoria-secrets.txt (chmod 600). Jangan tampilkan secret di chat
    KECUALI EKYC_AI_API_KEY pada mode C bila kamu yang meng-generate (user perlu memasangnya di laptop).
-6. Build & jalankan (nama project compose "victoria", tidak bentrok dgn container lain):
-   RAM available < 3 GB → `COMPOSE_PARALLEL_LIMIT=1 docker compose build` lalu `docker compose up -d`;
-   selain itu `docker compose up -d --build`. Pantau `docker compose logs -f api` sampai "Application ready!".
-7. Nginx: buat file BARU /etc/nginx/sites-available/victoria (jangan sentuh site lain) sesuai DEPLOY_VPS.md langkah 8
+6. Build & jalankan (nama project = COMPOSE_PROJECT_NAME, tidak bentrok dgn container lain):
+   RAM available < 3 GB → build SATU service per perintah: `for s in api ekyc-ai frontend cms; do docker compose build $s; done`
+   lalu `docker compose up -d` (COMPOSE_PARALLEL_LIMIT tidak dipatuhi Compose v2.39); selain itu `docker compose up -d --build`. Pantau `docker compose logs -f api` sampai "Application ready!".
+7. Nginx: kalau nginx milik panel (aaPanel: /etc/nginx tidak ada) ikuti DEPLOY_VPS "Server dengan panel" — jangan apt install nginx.
+   Selain itu buat file BARU /etc/nginx/sites-available/<nama> (jangan sentuh site lain) sesuai DEPLOY_VPS.md langkah 8
    dengan host & port dari langkah 5 (API: client_max_body_size 10m, proxy_read_timeout 300s). nginx -t, reload.
    Pastikan DNS sudah mengarah ke IP server ini (dig +short <WEB_HOST>) — kalau belum, STOP di sini & lapor.
    Lalu: certbot --nginx --non-interactive --agree-tos -m <EMAIL_CERTBOT> -d <WEB_HOST> -d <CMS_HOST> -d <API_HOST>
@@ -65,7 +67,7 @@ PANDUAN RESMI: setelah clone, baca /opt/victoria/sekuritas-infra/DEPLOY_VPS.md. 
    d. Login CMS (POST /api/cms/auth/login) Super Admin & Ops; login web (POST /api/auth/login-email) member@… & member.baru@…
       Email: victoria = admin@/ops@/member@/member.baru@sekuritas-demo.id; danapathi = superadmin@/ops@/member@/member.baru@danapathi-demo.id
    e. Alur eKYC: register-email (email acak) → ambil activation_token dari DB
-      (docker compose exec postgres psql -U victoria -d victoria -c "select activation_token from users where email='...'")
+      (docker compose exec postgres psql -U <DB_USER> -d <DB_NAME> -c "select activation_token from users where email='...'")
       → /api/auth/activate → /api/auth/login-email → /api/ekyc/session → /api/ekyc/ocr (file /opt/victoria/sekuritas-infra/design/ktp.jpeg).
       Mode A/C: laporkan nik/name yang terbaca (mode C hanya bila laptop sedang menjalankan AI; kalau tidak, cukup laporkan).
    f. docker compose ps → semua Up; free -h setelah jalan; pastikan app lain di server masih jalan seperti di langkah 1.
